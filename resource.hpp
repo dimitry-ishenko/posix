@@ -50,6 +50,8 @@ public:
 
     ////////////////////
     bool valid() const noexcept { return fd_ != invalid; }
+    explicit operator bool() const noexcept { return valid(); }
+
     void clear() noexcept;
 
     auto fd() const noexcept { return fd_; }
