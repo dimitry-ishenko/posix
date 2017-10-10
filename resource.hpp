@@ -34,18 +34,18 @@ public:
     ////////////////////
     resource() noexcept = default;
     resource(const resource&) = delete;
-    resource(resource&& other) noexcept { swap(other); }
+    resource(resource&& rhs) noexcept { swap(rhs); }
 
     explicit resource(int fd) noexcept : fd_(fd) { }
 
     resource& operator=(const resource&) = delete;
     resource& operator=(resource&& other) noexcept { swap(other); return (*this); }
 
-    void swap(resource& other) noexcept
+    void swap(resource& rhs) noexcept
     {
         using std::swap;
-        swap(fd_, other.fd_);
-        wait_fd_ = other.wait_fd_.exchange(wait_fd_); // not atomic!
+        swap(fd_, rhs.fd_);
+        wait_fd_ = rhs.wait_fd_.exchange(wait_fd_); // not atomic!
     }
 
     ////////////////////
