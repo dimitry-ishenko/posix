@@ -104,7 +104,10 @@ resource::try_read_for(const std::chrono::duration<Rep, Period>& time)
 template<typename Clock, typename Duration>
 inline bool
 resource::try_read_until(const std::chrono::time_point<Clock, Duration>& tp)
-{ return try_read_for(tp - Clock::now()); }
+{
+    auto now = Clock::now();
+    return try_read_for(tp - (tp < now ? tp : now));
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 inline bool resource::try_write() { return try_write_for(msec::zero()); }
@@ -120,7 +123,10 @@ resource::try_write_for(const std::chrono::duration<Rep, Period>& time)
 template<typename Clock, typename Duration>
 inline bool
 resource::try_write_until(const std::chrono::time_point<Clock, Duration>& tp)
-{ return try_write_for(tp - Clock::now()); }
+{
+    auto now = Clock::now();
+    return try_write_for(tp - (tp < now ? tp : now));
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 inline void swap(resource& lhs, resource& rhs) noexcept { lhs.swap(rhs); }
