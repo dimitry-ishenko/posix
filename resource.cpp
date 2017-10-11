@@ -39,13 +39,13 @@ bool resource::poll(const msec& time, event e)
         time == msec::max() ? -1 : time.count());
     wait_fd_ = invalid;
 
-    auto errc = static_cast<posix::errc>(errno);
+    posix::errno_error error;
 
     ////////////////////
     ::close(fd_pipe[0]);
     ::close(fd_pipe[1]);
 
-    if(count == -1) throw std::system_error(errc);
+    if(count == -1) throw error;
 
     return fd_poll[0].events & fd_poll[0].revents;
 }
