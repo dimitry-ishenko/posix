@@ -16,7 +16,7 @@ namespace posix
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-bool resource::wait_for(const msec& time, event e)
+bool resource::wait_for(const msec& time, event e) const
 {
     if(empty()) throw std::logic_error(
         "Attempt to access empty resource instance"

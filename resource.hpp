@@ -49,23 +49,23 @@ public:
 
     auto desc() const noexcept { return desc_; }
 
-    bool try_read();
-    bool try_read_forever();
+    bool try_read() const;
+    bool try_read_forever() const;
 
     template<typename Rep, typename Period>
-    bool try_read_for(const std::chrono::duration<Rep, Period>&);
+    bool try_read_for(const std::chrono::duration<Rep, Period>&) const;
 
     template<typename Clock, typename Duration>
-    bool try_read_until(const std::chrono::time_point<Clock, Duration>&);
+    bool try_read_until(const std::chrono::time_point<Clock, Duration>&) const;
 
-    bool try_write();
-    bool try_write_forever();
+    bool try_write() const;
+    bool try_write_forever() const;
 
     template<typename Rep, typename Period>
-    bool try_write_for(const std::chrono::duration<Rep, Period>&);
+    bool try_write_for(const std::chrono::duration<Rep, Period>&) const;
 
     template<typename Clock, typename Duration>
-    bool try_write_until(const std::chrono::time_point<Clock, Duration>&);
+    bool try_write_until(const std::chrono::time_point<Clock, Duration>&) const;
 
 private:
     ////////////////////
@@ -73,42 +73,42 @@ private:
 
     using msec = std::chrono::milliseconds;
     enum event { read, write };
-    bool wait_for(const msec&, event);
+    bool wait_for(const msec&, event) const;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-inline bool resource::try_read() { return try_read_for(msec::zero()); }
-inline bool resource::try_read_forever() { return try_read_for(msec::max()); }
+inline bool resource::try_read() const { return try_read_for(msec::zero()); }
+inline bool resource::try_read_forever() const { return try_read_for(msec::max()); }
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Rep, typename Period>
 inline bool
-resource::try_read_for(const std::chrono::duration<Rep, Period>& time)
+resource::try_read_for(const std::chrono::duration<Rep, Period>& time) const
 { return wait_for(std::chrono::duration_cast<msec>(time), read); }
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Clock, typename Duration>
 inline bool
-resource::try_read_until(const std::chrono::time_point<Clock, Duration>& tp)
+resource::try_read_until(const std::chrono::time_point<Clock, Duration>& tp) const
 {
     auto now = Clock::now();
     return try_read_for(tp - (tp < now ? tp : now));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-inline bool resource::try_write() { return try_write_for(msec::zero()); }
-inline bool resource::try_write_forever() { return try_write_for(msec::max()); }
+inline bool resource::try_write() const { return try_write_for(msec::zero()); }
+inline bool resource::try_write_forever() const { return try_write_for(msec::max()); }
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Rep, typename Period>
 inline bool
-resource::try_write_for(const std::chrono::duration<Rep, Period>& time)
+resource::try_write_for(const std::chrono::duration<Rep, Period>& time) const
 { return wait_for(std::chrono::duration_cast<msec>(time), write); }
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Clock, typename Duration>
 inline bool
-resource::try_write_until(const std::chrono::time_point<Clock, Duration>& tp)
+resource::try_write_until(const std::chrono::time_point<Clock, Duration>& tp) const
 {
     auto now = Clock::now();
     return try_write_for(tp - (tp < now ? tp : now));
