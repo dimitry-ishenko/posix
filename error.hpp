@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2017 Dimitry Ishenko
+// Copyright (c) 2017-2018 Dimitry Ishenko
 // Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
 //
 // Distributed under the GNU GPL license. See the LICENSE.md file for details.
@@ -9,7 +9,6 @@
 #define POSIX_ERROR_HPP
 
 ////////////////////////////////////////////////////////////////////////////////
-#include <cerrno>
 #include <string>
 #include <system_error>
 
@@ -18,6 +17,8 @@ namespace posix
 {
 
 ////////////////////////////////////////////////////////////////////////////////
+// posix error codes
+//
 enum class errc
 {
     address_family_not_supported       = EAFNOSUPPORT,
@@ -117,6 +118,8 @@ enum class errc
 };
 
 ////////////////////////////////////////////////////////////////////////////////
+// posix error category
+//
 class category : public std::error_category
 {
 public:
@@ -155,13 +158,11 @@ namespace posix
 //
 class errno_error : public std::system_error
 {
-    auto errc() { return static_cast<posix::errc>(errno < 0 ? -errno : errno); }
-
 public:
     ////////////////////
-    explicit errno_error(const std::string& msg) : std::system_error(errc(), msg) { }
-    explicit errno_error(const char* msg) : std::system_error(errc(), msg) { }
-    errno_error() : std::system_error(errc()) { }
+    errno_error();
+    explicit errno_error(const char*);
+    explicit errno_error(const std::string&);
 };
 
 ////////////////////////////////////////////////////////////////////////////////

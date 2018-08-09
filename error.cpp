@@ -6,6 +6,8 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 #include "posix/error.hpp"
+
+#include <cerrno>
 #include <cstring>
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -16,11 +18,11 @@ namespace posix
 const char* category::name() const noexcept { return "posix"; }
 
 ////////////////////////////////////////////////////////////////////////////////
-#define CASE(value) case errc::value: return std::errc::value
+#define CASE(value) case static_cast<int>(errc::value): return std::errc::value
 
 std::error_condition category::default_error_condition(int ev) const noexcept
 {
-    switch(static_cast<errc>(ev))
+    switch(ev)
     {
     CASE(address_family_not_supported      );
     CASE(address_in_use                    );
@@ -77,14 +79,14 @@ std::error_condition category::default_error_condition(int ev) const noexcept
     CASE(not_connected                     );
     CASE(not_enough_memory                 );
 #if ENOTSUP != EOPNOTSUPP
-    MAP_CODE_TO_COND(not_supported                     );
+    CASE(not_supported                     );
 #endif
     CASE(operation_canceled                );
     CASE(operation_in_progress             );
     CASE(operation_not_permitted           );
     CASE(operation_not_supported           );
 #if EWOULDBLOCK != EAGAIN
-    MAP_CODE_TO_COND(operation_would_block             );
+    CASE(operation_would_block             );
 #endif
     CASE(owner_dead                        );
     CASE(permission_denied                 );
@@ -118,5 +120,22 @@ const std::error_category& category()
     static class category instance;
     return instance;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+inline auto to_errc(int n) { return static_cast<errc>(n < 0 ? -n : n); }
+
+////////////////////////////////////////////////////////////////////////////////
+errno_error::errno_error() :
+    std::system_error(to_errc(errno))
+{ }
+
+errno_error::errno_error(const char* msg) :
+    std::system_error(to_errc(errno), msg)
+{ }
+
+errno_error::errno_error(const std::string& msg) :
+    std::system_error(to_errc(errno), msg)
+{ }
+
 ////////////////////////////////////////////////////////////////////////////////
 }
