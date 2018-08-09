@@ -9,7 +9,6 @@
 #define POSIX_RESOURCE_HPP
 
 ////////////////////////////////////////////////////////////////////////////////
-#include <atomic>
 #include <chrono>
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -19,11 +18,8 @@ namespace posix
 ////////////////////////////////////////////////////////////////////////////////
 // Resource with a descriptor (eg, file, socket, pipe, etc).
 //
-// Enables the owner to check for or block until
-// a read/recv or write/send operation can be performed.
-//
-// Provides thread-safe way to cancel() pending wait.
-// NB: The remainder of the class is not guaranteed to be thread-safe.
+// Enables resource owner to check for or block until a read/recv or write/send
+// operation can be performed.
 //
 class resource
 {
@@ -36,13 +32,12 @@ public:
     resource(resource&& rhs) noexcept { swap(rhs); }
 
     resource& operator=(const resource&) = delete;
-    resource& operator=(resource&& other) noexcept { swap(other); return (*this); }
+    resource& operator=(resource&& rhs) noexcept { swap(rhs); return (*this); }
 
     void swap(resource& rhs) noexcept
     {
         using std::swap;
         swap(fd_, rhs.fd_);
-        cancel_fd_ = rhs.cancel_fd_.exchange(cancel_fd_); // not atomic!!!
     }
 
     ////////////////////
@@ -69,16 +64,10 @@ public:
     template<typename Clock, typename Duration>
     bool try_write_until(const std::chrono::time_point<Clock, Duration>&);
 
-    ////////////////////
-    // cancel pending wait from another thread
-    void cancel() noexcept;
-
 private:
     ////////////////////
     static constexpr int invalid = -1;
-
     int fd_ = invalid;
-    std::atomic<int> cancel_fd_ { invalid };
 
     using msec = std::chrono::milliseconds;
     enum event { read, write };
