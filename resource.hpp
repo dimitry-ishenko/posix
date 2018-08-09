@@ -25,8 +25,11 @@ class resource
 {
 public:
     ////////////////////
+    static constexpr int invalid_desc = -1;
+
+    ////////////////////
     resource() noexcept = default;
-    explicit resource(int fd) noexcept : fd_(fd) { }
+    explicit resource(int desc) noexcept : desc_(desc) { }
 
     resource(const resource&) = delete;
     resource(resource&& rhs) noexcept { swap(rhs); }
@@ -37,14 +40,14 @@ public:
     void swap(resource& rhs) noexcept
     {
         using std::swap;
-        swap(fd_, rhs.fd_);
+        swap(desc_, rhs.desc_);
     }
 
     ////////////////////
-    bool empty() const noexcept { return fd_ == invalid; }
+    bool empty() const noexcept { return desc_ == invalid_desc; }
     explicit operator bool() const noexcept { return !empty(); }
 
-    auto fd() const noexcept { return fd_; }
+    auto desc() const noexcept { return desc_; }
 
     bool try_read();
     bool try_read_forever();
@@ -66,8 +69,7 @@ public:
 
 private:
     ////////////////////
-    static constexpr int invalid = -1;
-    int fd_ = invalid;
+    int desc_ = invalid_desc;
 
     using msec = std::chrono::milliseconds;
     enum event { read, write };

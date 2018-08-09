@@ -8,6 +8,7 @@
 #include "posix/error.hpp"
 #include "posix/resource.hpp"
 
+#include <stdexcept>
 #include <poll.h>
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -17,8 +18,12 @@ namespace posix
 ////////////////////////////////////////////////////////////////////////////////
 bool resource::wait_for(const msec& time, event e)
 {
+    if(empty()) throw std::logic_error(
+        "Attempt to access empty resource instance"
+    );
+
     short events = (e == read) ? POLLIN | POLLPRI : (e == write) ? POLLOUT : 0;
-    pollfd fd_poll = { fd_, events, 0 };
+    pollfd fd_poll = { desc_, events, 0 };
 
     auto count = ::poll(&fd_poll, 1,
         time == msec::max() ? -1 : static_cast<int>(time.count())
