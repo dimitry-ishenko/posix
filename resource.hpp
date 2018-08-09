@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2017 Dimitry Ishenko
+// Copyright (c) 2017-2018 Dimitry Ishenko
 // Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
 //
 // Distributed under the GNU GPL license. See the LICENSE.md file for details.
@@ -17,9 +17,6 @@ namespace posix
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-enum eons_t { eons };
-
-////////////////////////////////////////////////////////////////////////////////
 // Resource with a descriptor (eg, file, socket, pipe, etc).
 //
 // Enables the owner to check for or block until
@@ -33,10 +30,10 @@ class resource
 public:
     ////////////////////
     resource() noexcept = default;
+    explicit resource(int fd) noexcept : fd_(fd) { }
+
     resource(const resource&) = delete;
     resource(resource&& rhs) noexcept { swap(rhs); }
-
-    explicit resource(int fd) noexcept : fd_(fd) { }
 
     resource& operator=(const resource&) = delete;
     resource& operator=(resource&& other) noexcept { swap(other); return (*this); }
@@ -45,19 +42,17 @@ public:
     {
         using std::swap;
         swap(fd_, rhs.fd_);
-        wait_fd_ = rhs.wait_fd_.exchange(wait_fd_); // not atomic!
+        cancel_fd_ = rhs.cancel_fd_.exchange(cancel_fd_); // not atomic!!!
     }
 
     ////////////////////
-    bool valid() const noexcept { return fd_ != invalid; }
-    explicit operator bool() const noexcept { return valid(); }
-
-    void clear() noexcept;
+    bool empty() const noexcept { return fd_ == invalid; }
+    explicit operator bool() const noexcept { return !empty(); }
 
     auto fd() const noexcept { return fd_; }
 
     bool try_read();
-    bool try_read_for(eons_t);
+    bool try_read_forever();
 
     template<typename Rep, typename Period>
     bool try_read_for(const std::chrono::duration<Rep, Period>&);
@@ -66,7 +61,7 @@ public:
     bool try_read_until(const std::chrono::time_point<Clock, Duration>&);
 
     bool try_write();
-    bool try_write_for(eons_t);
+    bool try_write_forever();
 
     template<typename Rep, typename Period>
     bool try_write_for(const std::chrono::duration<Rep, Period>&);
@@ -75,7 +70,7 @@ public:
     bool try_write_until(const std::chrono::time_point<Clock, Duration>&);
 
     ////////////////////
-    // cancel pending wait [usually] from another thread
+    // cancel pending wait from another thread
     void cancel() noexcept;
 
 private:
@@ -83,22 +78,22 @@ private:
     static constexpr int invalid = -1;
 
     int fd_ = invalid;
-    std::atomic<int> wait_fd_ { invalid };
+    std::atomic<int> cancel_fd_ { invalid };
 
     using msec = std::chrono::milliseconds;
     enum event { read, write };
-    bool poll(const msec&, event);
+    bool wait_for(const msec&, event);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 inline bool resource::try_read() { return try_read_for(msec::zero()); }
-inline bool resource::try_read_for(eons_t) { return try_read_for(msec::max()); }
+inline bool resource::try_read_forever() { return try_read_for(msec::max()); }
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Rep, typename Period>
 inline bool
 resource::try_read_for(const std::chrono::duration<Rep, Period>& time)
-{ return poll(std::chrono::duration_cast<msec>(time), read); }
+{ return wait_for(std::chrono::duration_cast<msec>(time), read); }
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Clock, typename Duration>
@@ -111,13 +106,13 @@ resource::try_read_until(const std::chrono::time_point<Clock, Duration>& tp)
 
 ////////////////////////////////////////////////////////////////////////////////
 inline bool resource::try_write() { return try_write_for(msec::zero()); }
-inline bool resource::try_write_for(eons_t) { return try_write_for(msec::max()); }
+inline bool resource::try_write_forever() { return try_write_for(msec::max()); }
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Rep, typename Period>
 inline bool
 resource::try_write_for(const std::chrono::duration<Rep, Period>& time)
-{ return poll(std::chrono::duration_cast<msec>(time), write); }
+{ return wait_for(std::chrono::duration_cast<msec>(time), write); }
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Clock, typename Duration>
