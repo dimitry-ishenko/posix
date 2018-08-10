@@ -16,6 +16,9 @@ namespace posix
 {
 
 ////////////////////////////////////////////////////////////////////////////////
+using desc_t = int;
+
+////////////////////////////////////////////////////////////////////////////////
 // Resource with a descriptor (eg, file, socket, pipe, etc).
 //
 // Enables resource owner to check for or block until a read/recv or write/send
@@ -26,7 +29,7 @@ class resource
 public:
     ////////////////////
     resource() noexcept = default;
-    explicit resource(int desc) noexcept : desc_(desc) { }
+    resource(desc_t desc) noexcept : desc_(desc) { }
 
     resource(const resource&) = delete;
     resource(resource&& rhs) noexcept { swap(rhs); }
@@ -45,6 +48,7 @@ public:
     explicit operator bool() const noexcept { return !empty(); }
 
     auto desc() const noexcept { return desc_; }
+    operator desc_t() const noexcept { return desc(); }
 
     bool try_read() const;
     bool try_read_forever() const;
@@ -66,7 +70,7 @@ public:
 
 private:
     ////////////////////
-    int desc_ = -1;
+    desc_t desc_ = -1;
 
     using msec = std::chrono::milliseconds;
     enum event { read, write };
