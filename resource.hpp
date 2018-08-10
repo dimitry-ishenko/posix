@@ -25,9 +25,6 @@ class resource
 {
 public:
     ////////////////////
-    static constexpr int invalid_desc = -1;
-
-    ////////////////////
     resource() noexcept = default;
     explicit resource(int desc) noexcept : desc_(desc) { }
 
@@ -44,7 +41,7 @@ public:
     }
 
     ////////////////////
-    bool empty() const noexcept { return desc_ == invalid_desc; }
+    bool empty() const noexcept { return desc_ < 0; }
     explicit operator bool() const noexcept { return !empty(); }
 
     auto desc() const noexcept { return desc_; }
@@ -69,7 +66,7 @@ public:
 
 private:
     ////////////////////
-    int desc_ = invalid_desc;
+    int desc_ = -1;
 
     using msec = std::chrono::milliseconds;
     enum event { read, write };
