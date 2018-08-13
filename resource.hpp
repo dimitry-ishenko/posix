@@ -16,7 +16,7 @@ namespace posix
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-using desc_t = int;
+using desc = int;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Resource with a descriptor (eg, file, socket, pipe, etc).
@@ -29,26 +29,20 @@ class resource
 public:
     ////////////////////
     resource() noexcept = default;
-    resource(desc_t desc) noexcept : desc_(desc) { }
+    resource(posix::desc desc) noexcept : desc_(desc) { }
 
-    resource(const resource&) = delete;
-    resource(resource&& rhs) noexcept { swap(rhs); }
+    resource(const resource&) noexcept = default;
+    resource(resource&&) noexcept = default;
 
-    resource& operator=(const resource&) = delete;
-    resource& operator=(resource&& rhs) noexcept { swap(rhs); return (*this); }
-
-    void swap(resource& rhs) noexcept
-    {
-        using std::swap;
-        swap(desc_, rhs.desc_);
-    }
+    resource& operator=(const resource&) noexcept = default;
+    resource& operator=(resource&&) noexcept = default;
 
     ////////////////////
     bool empty() const noexcept { return desc_ < 0; }
     explicit operator bool() const noexcept { return !empty(); }
 
     auto desc() const noexcept { return desc_; }
-    operator desc_t() const noexcept { return desc(); }
+    operator posix::desc() const noexcept { return desc(); }
 
     bool try_read() const;
     bool try_read_forever() const;
@@ -70,7 +64,7 @@ public:
 
 private:
     ////////////////////
-    desc_t desc_ = -1;
+    posix::desc desc_ = -1;
 
     using msec = std::chrono::milliseconds;
     enum event { read, write };
@@ -114,9 +108,6 @@ resource::try_write_until(const std::chrono::time_point<Clock, Duration>& tp) co
     auto now = Clock::now();
     return try_write_for(tp - (tp < now ? tp : now));
 }
-
-////////////////////////////////////////////////////////////////////////////////
-inline void swap(resource& lhs, resource& rhs) noexcept { lhs.swap(rhs); }
 
 ////////////////////////////////////////////////////////////////////////////////
 }
