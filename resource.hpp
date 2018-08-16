@@ -17,6 +17,7 @@ namespace posix
 
 ////////////////////////////////////////////////////////////////////////////////
 using desc = int;
+static constexpr desc ndesc = -1;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Resource with a descriptor (eg, file, socket, pipe, etc).
@@ -38,7 +39,7 @@ public:
     resource& operator=(resource&&) noexcept = default;
 
     ////////////////////
-    bool empty() const noexcept { return desc_ < 0; }
+    bool empty() const noexcept { return desc_ == ndesc; }
     explicit operator bool() const noexcept { return !empty(); }
 
     auto desc() const noexcept { return desc_; }
@@ -64,7 +65,7 @@ public:
 
 private:
     ////////////////////
-    posix::desc desc_ = -1;
+    posix::desc desc_ = ndesc;
 
     using msec = std::chrono::milliseconds;
     enum event { read, write };
