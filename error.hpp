@@ -154,7 +154,7 @@ namespace posix
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Convenience class to generate system_error from errno.
+// generate system_error from errno
 //
 class errno_error : public std::system_error
 {
