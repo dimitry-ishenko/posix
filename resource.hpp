@@ -57,7 +57,7 @@ public:
     void close();
 
     ////////////////////
-    bool try_read() const;
+    bool can_read() const;
     bool try_read_forever() const;
 
     template<typename Rep, typename Period>
@@ -66,7 +66,7 @@ public:
     template<typename Clock, typename Duration>
     bool try_read_until(const std::chrono::time_point<Clock, Duration>&) const;
 
-    bool try_write() const;
+    bool can_write() const;
     bool try_write_forever() const;
 
     template<typename Rep, typename Period>
@@ -89,7 +89,7 @@ private:
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-inline bool resource::try_read() const { return try_read_for(msec::zero()); }
+inline bool resource::can_read() const { return try_read_for(msec::zero()); }
 inline bool resource::try_read_forever() const { return try_read_for(msec::max()); }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -108,7 +108,7 @@ resource::try_read_until(const std::chrono::time_point<Clock, Duration>& tp) con
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-inline bool resource::try_write() const { return try_write_for(msec::zero()); }
+inline bool resource::can_write() const { return try_write_for(msec::zero()); }
 inline bool resource::try_write_forever() const { return try_write_for(msec::max()); }
 
 ////////////////////////////////////////////////////////////////////////////////
