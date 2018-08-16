@@ -122,7 +122,7 @@ const std::error_category& category()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-inline auto to_errc(int n) { return static_cast<errc>(n < 0 ? -n : n); }
+namespace { auto to_errc(int n) { return static_cast<errc>(n < 0 ? -n : n); } }
 
 ////////////////////////////////////////////////////////////////////////////////
 errno_error::errno_error() :
