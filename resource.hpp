@@ -16,8 +16,15 @@ namespace posix
 {
 
 ////////////////////////////////////////////////////////////////////////////////
+// descriptor type
 using desc = int;
+
+// no/invalid descriptor
 static constexpr desc ndesc = -1;
+
+// adopt tag
+struct adopt_t { explicit adopt_t() noexcept = default; };
+constexpr adopt_t adopt { };
 
 ////////////////////////////////////////////////////////////////////////////////
 // posix resource with descriptor (eg, file, socket, pipe, etc)
@@ -28,12 +35,16 @@ public:
     ////////////////////
     resource() noexcept = default;
     resource(posix::desc desc) noexcept : desc_(desc) { }
+    resource(posix::desc desc, adopt_t) noexcept : desc_(desc), adopt_(true) { }
+   ~resource();
 
-    resource(const resource&) noexcept = default;
-    resource(resource&&) noexcept = default;
+    resource(const resource& rhs) noexcept : resource(rhs.desc_) { }
+    resource(resource&& rhs) noexcept { swap(rhs); }
 
-    resource& operator=(const resource&) noexcept = default;
-    resource& operator=(resource&&) noexcept = default;
+    resource& operator=(const resource& rhs) noexcept;
+    resource& operator=(resource&& rhs) noexcept { swap(rhs); return *this; }
+
+    void swap(resource&) noexcept;
 
     ////////////////////
     bool empty() const noexcept { return desc_ == ndesc; }
@@ -42,6 +53,10 @@ public:
     auto desc() const noexcept { return desc_; }
     operator posix::desc() const noexcept { return desc(); }
 
+    void adopt(posix::desc desc) noexcept;
+    void close();
+
+    ////////////////////
     bool try_read() const;
     bool try_read_forever() const;
 
@@ -63,10 +78,14 @@ public:
 private:
     ////////////////////
     posix::desc desc_ = ndesc;
+    bool adopt_ = false;
 
     using msec = std::chrono::milliseconds;
     enum event { read, write };
     bool wait_for(const msec&, event) const;
+
+    void throw_empty() const;
+    void maybe_close() noexcept;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -106,6 +125,9 @@ resource::try_write_until(const std::chrono::time_point<Clock, Duration>& tp) co
     auto now = Clock::now();
     return try_write_for(tp - (tp < now ? tp : now));
 }
+
+////////////////////////////////////////////////////////////////////////////////
+inline void swap(resource& lhs, resource& rhs) noexcept { lhs.swap(rhs); }
 
 ////////////////////////////////////////////////////////////////////////////////
 }
