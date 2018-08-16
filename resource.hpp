@@ -20,10 +20,7 @@ using desc = int;
 static constexpr desc ndesc = -1;
 
 ////////////////////////////////////////////////////////////////////////////////
-// Resource with a descriptor (eg, file, socket, pipe, etc).
-//
-// Enables resource owner to check for or block until a read/recv or write/send
-// operation can be performed.
+// posix resource with descriptor (eg, file, socket, pipe, etc)
 //
 class resource
 {
