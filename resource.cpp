@@ -19,7 +19,7 @@ namespace posix
 bool resource::wait_for(const msec& time, event e) const
 {
     if(empty()) throw std::logic_error(
-        "Attempt to access empty resource instance"
+        "Attempt to access empty posix::resource instance"
     );
 
     short events = (e == read) ? POLLIN | POLLPRI : (e == write) ? POLLOUT : 0;
