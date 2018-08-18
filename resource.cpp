@@ -5,8 +5,8 @@
 // Distributed under the GNU GPL license. See the LICENSE.md file for details.
 
 ////////////////////////////////////////////////////////////////////////////////
-#include "posix/error.hpp"
-#include "posix/resource.hpp"
+#include "error.hpp"
+#include "resource.hpp"
 
 #include <stdexcept>
 #include <utility>
